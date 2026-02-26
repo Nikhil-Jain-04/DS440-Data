@@ -129,7 +129,7 @@ PIECE_INFO = {
     ],
     "kick_index": 0
   },
-  "J": {
+  "L": {
     "color": "#0000FF",
     "rotations": [
       [
@@ -155,7 +155,7 @@ PIECE_INFO = {
     ],
     "kick_index": 0
   },
-  "L": {
+  "J": {
     "color": "#FF7F00",
     "rotations": [
       [
@@ -278,15 +278,18 @@ def boardToString(board):
 
 # print(boardToString())
 
-
+import numpy as np
 def isValid(board, piece, px, py, r):
   rMatrix = PIECE_INFO[piece]["rotations"][r]
-
+  # print(board)
+  # print('x',len(rMatrix))
+ 
   for dy in range(len(rMatrix)):
+    # print('y', len(rMatrix[dy]))
     for dx in range(len(rMatrix[dy])):
       x = px + dx
       y = py + dy
-
+      # print('x', x, 'y', y)
       if rMatrix[dy][dx] == 1 and (x < 0 or x >= 10 or y < 0 or y >= 40 or board[y][x] != "N"):
         return False
   
@@ -304,10 +307,16 @@ def getRotationResult(board, piece, px, py, r, rot):
   
   return (px, py, r, False)
 
+# returns if a board is valid or not
 def isTerminal(board, piece, px, py, r):
   return not isValid(board, piece, px, py+1, r)
 
-def getAllBoardStates(board, piece):
+# if type= False, board is a (40,10) of int and piece is a char. If type = True, board is a (400,) numpy array and piece is an int
+def getAllBoardStates(board, piece, TYPE):
+  if TYPE:
+    inv_vocab = {0:"N", 1:"G", 2:"I", 3:"O", 4:"T", 5:"S", 6:"Z", 7:"J", 8:"L"}
+    board = mod_board_matrix_to_helper(board)
+    piece = inv_vocab[piece]
   stack = [(3 if piece != "O" else 4, 0, 0)]
   terminal_states = set()
   seen = set()
@@ -335,30 +344,42 @@ def getAllBoardStates(board, piece):
 
       if valid:
         stack += [(newX, newY, newR)]
-  
+  # print('len seen', len(seen))
+  # print('terminal states', terminal_states)
+  # print('len terminal states', len(terminal_states))
   return terminal_states
 
 
+def clearLines(board):
+    # board is list of rows, index 0 = bottom
+    new_board = [row for row in board if any(cell == "N" for cell in row)]
+    
+    # add empty rows at the BOTTOM (index 0) to replace cleared lines
+    cleared = 40 - len(new_board)
+    for _ in range(cleared):
+        new_board.insert(0, ["N"] * 10)
+    
+    return new_board
+
 def getBoardString(board, piece, px, py, r):
-  board_copy = [row[:] for row in board]
-  
-  rMatrix = PIECE_INFO[piece]["rotations"][r]
+    board_copy = [row[:] for row in board]
+    
+    rMatrix = PIECE_INFO[piece]["rotations"][r]
 
-  for dy in range(len(rMatrix)):
-    for dx in range(len(rMatrix[dy])):
-      if rMatrix[dy][dx] == 1:
-        x = px + dx
-        y = py + dy
-        board_copy[y][x] = piece
-  
-  boardStr = ""
-
-  for row in board_copy:
-    boardStr = "".join(row) + boardStr
-  
-  return boardStr
-
-
+    for dy in range(len(rMatrix)):
+        for dx in range(len(rMatrix[dy])):
+            if rMatrix[dy][dx] == 1:
+                x = px + dx
+                y = py + dy
+                board_copy[y][x] = piece
+    
+    board_copy = clearLines(board_copy)  # apply line clears after placement
+    
+    boardStr = ""
+    for row in board_copy:
+        boardStr = "".join(row) + boardStr
+    
+    return boardStr
 
 def getBoardMatrix(boardStr):
   boardArr = []
@@ -374,25 +395,46 @@ def getBoardMatrix(boardStr):
   
   return boardArr
 
-init_board = getBoardMatrix("GGGGGNGGGGGGGGGGGGGNGGGGGGGGGNGGGGGGGGGNGGGGGGGGGNGGGGGGGGGNGGGGGGNGGGGGGGGNGGGGGGGGGNGGGGGGGGGNGGGGSSTTTLNJJJNSSTNNNLZJNNNNNNNLZZNNNNNNNLLZNNNNIIIIOONNNNNNNNOONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
-init_piece = "J"
+def mod_board_matrix_to_helper(board_matrix):
+    inv_vocab = {0:"N", 1:"G", 2:"I", 3:"O", 4:"T", 5:"S", 6:"Z", 7:"J", 8:"L"}
+    # print(board_matrix)
+    thing= board_matrix.reshape(40, 10).tolist()
+    thing2=[[inv_vocab[cell] for cell in row] for row in thing]
+    return thing2[::-1]
+
+# gets the numpy array for a board
+def getBoardArray(board, piece, px, py, r):
+    vocab = {"N":0,"G":1,"I":2,"O":3,"T":4,"S":5,"Z":6,"J":7,"L":8}
+    board_str = getBoardString(board, piece, px, py, r)
+    return np.array([vocab[c] for c in board_str], dtype=np.int32)
+
+# returns all numpy arrays for a set of states
+
+
+
+init_board = getBoardMatrix("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
+init_piece = "I"
 # print(isValid(init_board, init_piece, 7, 37, 1))
 # print(boardToString(init_board))
-states = getAllBoardStates(init_board, init_piece)
-boardStrings = []
+# states = getAllBoardStates(init_board, init_piece, False)
+# print(states)
+# boardStrings = []
 
-for px, py, r in states:
-  boardStrings += [getBoardString(init_board, init_piece, px, py, r)]
 
-boardStrings = sorted(list(set(boardStrings)))
-# print(sorted(boardStrings))
+# for px, py, r in states:
+#   boardStrings += [getBoardString(init_board, init_piece, px, py, r)]
 
-import json
+# boardStrings = sorted(list(set(boardStrings)))
+# print(len(sorted(boardStrings)))
+# for x in range(10):
+#   print(boardStrings[x])
 
-with open("states.json", "w") as f:
-    json.dump(list(states), f)
+# import json
 
-with open("boardStrings.json", "w") as f:
-    json.dump(boardStrings, f)
+# with open("states.json", "w") as f:
+#     json.dump(list(states), f)
+
+# with open("boardStrings.json", "w") as f:
+#     json.dump(boardStrings, f)
 
 
