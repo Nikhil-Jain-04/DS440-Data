@@ -278,6 +278,7 @@ sample_50k["correct"] = sample_50k.apply(
     axis=1
 )
 
+
 sample_50k.to_pickle("sample_50k.pkl")
 # this model only takes in the board states and attempts to score them on its own 
 def model_only_using_moves():
@@ -333,7 +334,7 @@ def model_only_using_moves():
     model.summary()
 
 def model_2(train_queue, train_hold, train_place, train_start, train_candidate,train_y):
-    queue_input = Input(shape=(5,), name="queue_input")
+    queue_input = Input(shape=(14,), name="queue_input")
     hold_input = Input(shape=(1,), name="hold_input")
     place_input = Input(shape=(1,), name="place_input")
 
@@ -348,7 +349,7 @@ def model_2(train_queue, train_hold, train_place, train_start, train_candidate,t
         strides=(1, 1), # moves the window 1 cell at a time
         padding="same", # 
         activation="relu",
-        name="conv1"
+        name="conv11"
     )(start_board_input)
 
     # takes the 32 feature maps and learns to recognize pattern/feature combos.
@@ -358,11 +359,11 @@ def model_2(train_queue, train_hold, train_place, train_start, train_candidate,t
         strides=(1, 1), # moves the window 1 cell at a time
         padding="same", 
         activation="relu",
-        name="conv2"
+        name="conv12"
     )(s)
 
     # flattens the output from the conv layers into a 1d vector for the dense layers to process.
-    s = Flatten(name="flatten")(s)
+    s = Flatten(name="flatten1")(s)
 
     # takes the massive flattened vector and refines it to 128 features
     s = Dense(
@@ -380,7 +381,7 @@ def model_2(train_queue, train_hold, train_place, train_start, train_candidate,t
         strides=(1, 1), # moves the window 1 cell at a time
         padding="same", # 
         activation="relu",
-        name="conv1"
+        name="conv21"
     )(candidate_board_input)
 
     # takes the 32 feature maps and learns to recognize pattern/feature combos.
@@ -390,17 +391,17 @@ def model_2(train_queue, train_hold, train_place, train_start, train_candidate,t
         strides=(1, 1), # moves the window 1 cell at a time
         padding="same", 
         activation="relu",
-        name="conv2"
+        name="conv22"
     )(c)
 
     # flattens the output from the conv layers into a 1d vector for the dense layers to process.
-    c = Flatten(name="flatten")(c)
+    c = Flatten(name="flatten2")(c)
 
     # takes the massive flattened vector and refines it to 128 features
     c = Dense(
         units=128, # number of neurons per layer
         activation="relu",
-        name="dense1"
+        name="dense2"
     )(c)
 
     #####
