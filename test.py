@@ -53,8 +53,10 @@ def get_cases(df: pd.DataFrame):
 
 
 if __name__=="__main__":
-  df = pd.read_csv("data_transformed.csv")
-  get_cases(df)
+  # df = pd.read_csv("data_transformed.csv")
+  # get_cases(df)
+
+
   # print(df[df["placed"] == "O"]["r"].unique())
   # df = pd.read_csv("data_transformed.csv")
   # df["playfield_transformed"] = df["playfield"].map(transform_playfield)
@@ -69,3 +71,5 @@ if __name__=="__main__":
   # print(cases.head())
   # cases.to_csv("cases.csv")
   # pd.read_csv("cases.csv").to_json("cases.json", index=False)
+
+
